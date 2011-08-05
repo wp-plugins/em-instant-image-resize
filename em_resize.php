@@ -3,7 +3,7 @@
 Plugin Name: EM Instant Image Resize
 Plugin URI: www.expressmanor.co.za/plugins/instant-image-resize
 Description: Allows on-the-fly image resizing from the template into cached directories.
-Version: 1.0.1
+Version: 1.0.2
 Author: Kurt Ferreira
 Author URI: www.expressmanor.co.za
 License: GPL
@@ -26,7 +26,7 @@ class em_iiresize
 	 * Resize the image and cache to folder
 	 * 
 	 ---------------------------------------------------------------------------------------------*/				
-	function resize( $image, $width, $height, $quality, $crop, $fill, $force )
+	function resize( $image, $width, $height, $quality, $crop, $force )
 	{
 		$cached_file = '';
 		
@@ -54,17 +54,14 @@ class em_iiresize
 			} 
 			
 			// Calculate the size of the cached image request and see if it exists
-			if( !$crop ) 				
-				$size = array( $width, $height );	
-			else 
-				$size = $this->wanted_size( $original_file, $width, $height );
+			$size = $this->wanted_size( $original_file, $width, $height, $crop );
 			
 			if( !$force && file_exists( $cache_folder.'/'.$size[0].'x'.$size[1].'-'.basename( $image ) ) )
 			{
 				$cached_file = '/'.str_replace( $base_path, '', $cache_folder.'/'.$size[0].'x'.$size[1].'-'.basename( $image ) );
 			} else 
 			{	
-				$this->make_file( $original_file, $cache_folder.'/'.$size[0].'x'.$size[1].'-'.basename( $image ), $width, $height, $quality, $crop, $fill );				
+				$this->make_file( $original_file, $cache_folder.'/'.$size[0].'x'.$size[1].'-'.basename( $image ), $size[0], $size[1], $quality, $crop );				
 				$cached_file = '/'.str_replace( $base_path, '', $cache_folder.'/'.$size[0].'x'.$size[1].'-'.basename( $image ) );				
 			}			
 		} else {
@@ -79,7 +76,7 @@ class em_iiresize
 	 * Some simple housekeeping internal functions
 	 * 
 	 ---------------------------------------------------------------------------------------------*/
-	function make_file( $original, $output, $width, $height, $quality, $crop, $fill )
+	function make_file( $original, $output, $width, $height, $quality, $crop )
 	{
 		// Try increase memory first(do this incrementally so we get the largest possible memory allocation)
 		@ini_set("memory_limit","12M");
@@ -92,7 +89,7 @@ class em_iiresize
 		$height = intval( $height );
 		$quality = intval( $quality );
 
-		$fillcolour = $this->hex_to_rgb( $fill );
+		$fillcolour = array(255,255,255);
 	 
 		// First determine what file type we are opening		
 		$info  			= getimagesize( $original );
@@ -112,7 +109,7 @@ class em_iiresize
 			default:
 				return "Warning[ii_resize]: Unknown file type";				
 		}
-		
+		 		
 		// Create the new image
 		$new_image = imagecreatetruecolor( $width, $height );
 		
@@ -215,27 +212,27 @@ class em_iiresize
 		}
 	}
 	
-	function wanted_size( $src, $width, $height )
+	function wanted_size( $src, $width, $height, $crop )
 	{
 		list( $original_width, $original_height ) = getimagesize( $src );
 		$scale_width  = $width;
 		$scale_height = $height;
 		
-		if( $height == 'auto' || $width == 'auto' )
-		{
-			// Proportional scaling
-			$use_width = ( $width == 'auto' ) ? true : false;
-			if( $use_width ) 
-			{
-				$scale_factor 	= $original_width / $width;
-				$scale_width 	= $width;
-				$scale_height 	= $original_height * $scale_factor;
-			} else
-			{
-				$scale_factor 	= $original_height / $height;
-				$scale_width 	= $original_width * $scale_factor;
-				$scale_height 	= $height;
-			}
+		if(!$crop) {			
+			if($width == 'auto') {				
+				$p = intval($height) / $original_height;
+				$scale_width  = round($original_width * $p);
+				$scale_height = intval($height);
+			} else {				
+				$p = intval($width) / $original_width;
+				$scale_width  = intval($width);
+				$scale_height = round($original_height * $p);
+			}					
+		} else {
+			if($width == 'auto')
+				$scale_width = $height;
+			if($height == 'auto')
+				$scale_height = $width;
 		}
 		
 		return array( $scale_width, $scale_height );
@@ -297,13 +294,13 @@ class em_iiresize
  *		$height(int/string) The maximum height of the image(or 'auto' for proportional scaling
  *		$quality(int)		The quality(jpeg) of the resized image
  *		$crop(boolean)		Crop the image to requested size if scaling doesn't fit
- *		$force(boolean)		Force a new image resize(ignores cache)
- *		$fill(string)		The fill colour if the image isn't cropped(full hex value), N/A for transparent images
+ *		$fill(string)		!!DEPRECATED!!
+ *		$force(boolean)		Force a new image resize(ignores cache) 
  * @return URL to resized image(within cache folder)
  *
  ---------------------------------------------------------------------------------------------*/
 function em_resize( $src, $width, $height = 'auto', $quality = 95, $crop=true, $fill="CCCCCC", $force=false )
 {
 	$img_resize = new em_iiresize();	
-	return $img_resize->resize( $src, $width, $height, $quality, $crop, $fill, $force );
+	return $img_resize->resize( $src, $width, $height, $quality, $crop, $force );
 }

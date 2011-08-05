@@ -24,6 +24,10 @@ www.expressmanor.co.za
 
 == Changelog ==
 
+= 1.0.2 = 
+* Fixed 'auto' dimension problem
+* Fill colour now deprecated. Use CSS to force square display with fixed colour.
+
 = 1.0.1 =
 
 * Initial release
