@@ -299,7 +299,7 @@ class em_iiresize
  * @return URL to resized image(within cache folder)
  *
  ---------------------------------------------------------------------------------------------*/
-function em_resize( $src, $width, $height = 'auto', $quality = 95, $crop=true, $fill="CCCCCC", $force=false )
+function em_resize( $src, $width, $height = 'auto', $quality = 95, $crop=true, $fill=NULL, $force=false )
 {
 	$img_resize = new em_iiresize();	
 	return $img_resize->resize( $src, $width, $height, $quality, $crop, $force );
