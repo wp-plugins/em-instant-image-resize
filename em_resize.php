@@ -3,7 +3,7 @@
 Plugin Name: EM Instant Image Resize
 Plugin URI: www.expressmanor.co.za/plugins/instant-image-resize
 Description: Allows on-the-fly image resizing from the template into cached directories.
-Version: 1.0.2
+Version: 1.0.3
 Author: Kurt Ferreira
 Author URI: www.expressmanor.co.za
 License: GPL
@@ -34,9 +34,9 @@ class em_iiresize
 			$base_path = $_ENV['DOCUMENT_ROOT']."/";
 		else
 			$base_path = $_SERVER['DOCUMENT_ROOT']."/";
-			
+		
 		$base_path 		= str_replace( "\\", "/", $base_path );
-		$base_path 		= $this->clean_path( $base_path );		
+		$base_path 		= $this->clean_path( $base_path );
 		$image 			= $this->clear_absolute( $image );		
 		$original_file  = $base_path.$image;		
 		
@@ -47,7 +47,7 @@ class em_iiresize
 			if( !file_exists( $cache_folder ) ) 
 			{
 				if( !mkdir( $cache_folder, 0755, true ) )
-					return "Warning[ii_resize]: Cannot create the cache folder";					
+					return "Warning[ii_resize]: Cannot create the cache folder[".$cache_folder."]";					
 			
 				if( !is_writable( $cache_folder ) )
 					return "Warning[ii_resize]: Cannot write to cache folder";									
@@ -166,14 +166,14 @@ class em_iiresize
 				// at the center.	
 				if( $modified_width > $modified_height || $modified_width == $modified_height )
 				{					
-					$adjusted_width = round( $info[0] / $modified_height );
-					$half_width 	= round( $adjusted_width / 2 );
-					$crop_width 	= $half_width - round( $width / 2 );				
+					$adjusted_width = ceil( $info[0] / $modified_height );
+					$half_width 	= ceil( $adjusted_width / 2 );
+					$crop_width 	= $half_width - ceil( $width / 2 );				
 				} else if( ( $info[0] < $info[1] ) || ( $info[0] == $info[1] ) )
 				{
-					$adjusted_height = round( $info[1] / $modified_width );
-					$half_height 	 = round( $adjusted_height / 2 );
-					$crop_height 	 = $half_height - round( $height / 2 );
+					$adjusted_height = ceil( $info[1] / $modified_width );
+					$half_height 	 = ceil( $adjusted_height / 2 );
+					$crop_height 	 = $half_height - ceil( $height / 2 );
 				}
 				
 				imagecopyresampled( $new_image, $original_image, -$crop_width, -$crop_height, 0, 0, $adjusted_width, $adjusted_height, $info[0], $info[1] );
@@ -183,12 +183,12 @@ class em_iiresize
 				if( $modified_width > $modified_height || $modified_width == $modified_height ) 
 				{ 
 					$aspect = $modified_width / $modified_height;
-					$adjusted_height = round( $height / $aspect );				
+					$adjusted_height = ceil( $height / $aspect );				
 					$offset_height = ( $adjusted_height - $height ) / 2;
 				} else
 				{		
 					$aspect = $modified_height / $modified_width;
-					$adjusted_width = round( $width / $aspect );
+					$adjusted_width = ceil( $width / $aspect );
 					$offset_width = ( $adjusted_width - $width ) / 2;
 				}
 				
@@ -260,7 +260,7 @@ class em_iiresize
 		if( strstr( $path, 'http://' ) || strstr( $path, 'https://' ) )
 		{
 			$protocol = ( stristr( 'https', $_SERVER['SERVER_PROTOCOL'] ) )? 'https://' : 'http://';
-			$wordpress_domain = $protocol.( ( strstr( $path, 'www.' ) )?'www.'.$_SERVER['SERVER_NAME']:$_SERVER['SERVER_NAME'] );
+			$wordpress_domain = $protocol.( ( strstr( $path, 'www.' )===0 )?'www.'.$_SERVER['SERVER_NAME']:$_SERVER['SERVER_NAME'] );
 			
 			$path = str_replace( $wordpress_domain, '', $path );		
 		}
@@ -299,7 +299,7 @@ class em_iiresize
  * @return URL to resized image(within cache folder)
  *
  ---------------------------------------------------------------------------------------------*/
-function em_resize( $src, $width, $height = 'auto', $quality = 95, $crop=true, $fill=NULL, $force=false )
+function em_resize( $src, $width, $height = 'auto', $quality = 95, $crop=true, $fill="CCCCCC", $force=false)
 {
 	$img_resize = new em_iiresize();	
 	return $img_resize->resize( $src, $width, $height, $quality, $crop, $force );

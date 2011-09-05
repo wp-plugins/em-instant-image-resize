@@ -4,7 +4,7 @@ Tags: image, resize, instant, expressmanor
 Donate link: http://expressmanor.co.za/plugins/instant-image-resize/
 Requires at least: 3.0
 Tested up to: 3.1
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPLv2 or later
 
 Resize images from your theme templates, on-the-fly.
@@ -23,6 +23,10 @@ resize(you can force an image to be regenerated) so the directory needs to be wr
 www.expressmanor.co.za
 
 == Changelog ==
+
+= 1.0.3 = 
+* Ceiling on image crop/resize calculations to remove white lines on 'auto' dimensions
+* Path issues with www. subdomain where the file failed to strip the absolute path
 
 = 1.0.2 = 
 * Fixed 'auto' dimension problem
